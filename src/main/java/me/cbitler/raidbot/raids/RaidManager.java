@@ -54,7 +54,6 @@ public class RaidManager {
                             emoteList = Reactions.getOpenWorldEmotes();
                         else
                             emoteList = Reactions.getEmotes();
-
                         for (Emote emote : emoteList)
                             message1.addReaction(emote).queue();
                     } else {
@@ -255,15 +254,17 @@ public class RaidManager {
      * @param rolesWithNumbers The roles and their amounts
      * @return The formatted string
      */
-    private static String formatRolesForDatabase(List<RaidRole> rolesWithNumbers) {
+    public static String formatRolesForDatabase(List<RaidRole> rolesWithNumbers) {
         String data = "";
 
         for (int i = 0; i < rolesWithNumbers.size(); i++) {
             RaidRole role = rolesWithNumbers.get(i);
-            if (i == rolesWithNumbers.size() - 1) {
-                data += (role.amount + ":" + role.name);
+            String roleName = role.name;
+            if(role.isFlexOnly()) roleName = "!"+roleName;
+            if(i == rolesWithNumbers.size() - 1) {
+                data += (role.amount + ":" + roleName);
             } else {
-                data += (role.amount + ":" + role.name + ";");
+                data += (role.amount + ":" + roleName + ";");
             }
         }
 
@@ -302,8 +303,9 @@ public class RaidManager {
      */
     private static String buildRolesText(PendingRaid raid) {
         String text = "";
-        for (RaidRole role : raid.getRolesWithNumbers()) {
-            text += ("**" + role.name + " (" + role.amount + "):** \n");
+        for(RaidRole role : raid.getRolesWithNumbers()) {
+            if(role.isFlexOnly()) continue;
+            text += ("**" + role.name + ":**\n");
         }
         return text;
     }
@@ -316,6 +318,10 @@ public class RaidManager {
      * @return The flex roles text (blank here)
      */
     private static String buildFlexRolesText(PendingRaid raid) {
-        return "";
+        String text = "";
+        for(RaidRole role : raid.getRolesWithNumbers()) {
+            if(role.isFlexOnly()) text += ("**" + role.name + " (" + role.amount + "):**\n");
+        }
+        return text;
     }
 }
