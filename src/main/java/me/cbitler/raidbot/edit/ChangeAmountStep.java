@@ -2,9 +2,9 @@ package me.cbitler.raidbot.edit;
 
 import java.util.List;
 
-import me.cbitler.raidbot.raids.Raid;
+import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
-import me.cbitler.raidbot.raids.RaidRole;
+import me.cbitler.raidbot.models.RaidRole;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 
 /**

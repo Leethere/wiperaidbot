@@ -1,6 +1,6 @@
 package me.cbitler.raidbot.edit;
 
-import me.cbitler.raidbot.raids.Raid;
+import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -23,7 +23,7 @@ public class EditLeaderStep implements EditStep {
      */
     public boolean handleDM(PrivateMessageReceivedEvent e) {
         Raid raid = RaidManager.getRaid(messageID);
-        raid.setLeader(e.getMessage().getRawContent());
+        raid.setRaidLeaderName(e.getMessage().getRawContent());
         if (raid.updateLeaderDB()) {
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Leader successfully updated in database.").queue());
         } else {

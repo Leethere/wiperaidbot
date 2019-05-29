@@ -1,6 +1,6 @@
 package me.cbitler.raidbot.selection;
 
-import me.cbitler.raidbot.raids.Raid;
+import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.utility.ClassesSpecs;
 import me.cbitler.raidbot.utility.Reactions;
 import net.dv8tion.jda.core.entities.Emote;

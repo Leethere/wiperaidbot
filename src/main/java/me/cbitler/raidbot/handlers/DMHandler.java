@@ -5,7 +5,7 @@ import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.edit.EditStep;
 import me.cbitler.raidbot.logs.LogParser;
-import me.cbitler.raidbot.raids.PendingRaid;
+import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.SelectionStep;
 import net.dv8tion.jda.core.entities.ChannelType;

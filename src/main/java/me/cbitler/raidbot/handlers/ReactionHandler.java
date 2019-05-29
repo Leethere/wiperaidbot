@@ -3,7 +3,7 @@ package me.cbitler.raidbot.handlers;
 import me.cbitler.raidbot.RaidBot;
 import me.cbitler.raidbot.deselection.DeselectIdleStep;
 import me.cbitler.raidbot.deselection.DeselectionStep;
-import me.cbitler.raidbot.raids.Raid;
+import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.PickSpecStep;
 import me.cbitler.raidbot.selection.SelectionStep;
