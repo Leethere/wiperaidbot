@@ -6,13 +6,12 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
 import javax.security.auth.login.LoginException;
-
-import me.cbitler.raidbot.utility.EnvVariables;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 /**
  * Start the program, read the token, and start the bot
@@ -30,8 +29,8 @@ public class Main {
         }
         if (token == null) {
             try {
+                //Is able to fetch the token from an environment variable. Useful if the program is running in a cloud environment like Heroku
                 token = System.getenv("DISC_TOKEN");
-                System.out.println("token: " + token);
             } catch (Exception e) {
                 System.out.println("env var not working");
                 System.exit(1);
