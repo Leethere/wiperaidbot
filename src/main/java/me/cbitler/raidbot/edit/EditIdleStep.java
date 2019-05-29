@@ -38,6 +38,8 @@ public class EditIdleStep implements EditStep {
         			nextStep = new EditDescriptionStep(messageID);
         		else if (choiceId == 5) // leader
         			nextStep = new EditLeaderStep(messageID);
+        		else if (choiceId == 6) // roles
+        			nextStep = new EditRoleStep(messageID);
         		else
         			valid = false;
         	} catch (Exception excp) {
@@ -55,12 +57,14 @@ public class EditIdleStep implements EditStep {
      * {@inheritDoc}
      */
     public String getStepText() {
-        return "Choose which property you want to change:\n"
+        return "NOTE: You can type *cancel* at any point during this process to stop editing.\n\n"
+        		+ "Choose which property you want to change:\n"
         		+ "`1` time \n"
         		+ "`2` date \n"
         		+ "`3` name \n"
         		+ "`4` description \n"
         		+ "`5` leader \n"
+        		+ "`6` roles \n"
         		+ "or type *done* when you want to finish editing.";
     }
 

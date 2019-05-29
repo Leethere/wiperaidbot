@@ -9,7 +9,7 @@ import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.handlers.ChannelMessageHandler;
 import me.cbitler.raidbot.handlers.DMHandler;
 import me.cbitler.raidbot.handlers.ReactionHandler;
-import me.cbitler.raidbot.raids.PendingRaid;
+import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.SelectionStep;
 import me.cbitler.raidbot.utility.GuildCountUtil;
@@ -35,18 +35,18 @@ public class RaidBot {
     private static RaidBot instance;
     private JDA jda;
 
-    HashMap<String, CreationStep> creation = new HashMap<String, CreationStep>();
-    HashMap<String, EditStep> edits = new HashMap<String, EditStep>();
-    HashMap<String, PendingRaid> pendingRaids = new HashMap<String, PendingRaid>();
-    HashMap<String, SelectionStep> roleSelection = new HashMap<String, SelectionStep>();
-    HashMap<String, DeselectionStep> roleDeselection = new HashMap<String, DeselectionStep>();
+    private HashMap<String, CreationStep> creation = new HashMap<>();
+    private HashMap<String, EditStep> edits = new HashMap<>();
+    private HashMap<String, PendingRaid> pendingRaids = new HashMap<>();
+    private HashMap<String, SelectionStep> roleSelection = new HashMap<>();
+    private HashMap<String, DeselectionStep> roleDeselection = new HashMap<>();
 
-    Set<String> editList = new HashSet<String>();
+    private Set<String> editList = new HashSet<>();
 
     //TODO: This should be moved to it's own settings thing
-    HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
+    private HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
 
-    Database db;
+    private Database db;
 
     /**
      * Create a new instance of the raid bot with the specified JDA api

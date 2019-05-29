@@ -1,6 +1,6 @@
 package me.cbitler.raidbot.deselection;
 
-import me.cbitler.raidbot.raids.Raid;
+import me.cbitler.raidbot.models.Raid;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 
 /**
