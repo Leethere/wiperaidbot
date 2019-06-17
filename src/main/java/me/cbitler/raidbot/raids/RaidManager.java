@@ -1,7 +1,7 @@
 package me.cbitler.raidbot.raids;
 
 import me.cbitler.raidbot.RaidBot;
-import me.cbitler.raidbot.database.Database;
+import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.models.Raid;
@@ -82,7 +82,7 @@ public class RaidManager {
      */
     private static boolean insertToDatabase(PendingRaid raid, String messageId, String serverId, String channelId) {
         RaidBot bot = RaidBot.getInstance();
-        Database db = bot.getDatabase();
+        SqliteDatabaseDAOImpl db = bot.getDatabase();
 
         String roles = formatRolesForDatabase(raid.getRolesWithNumbers());
 
@@ -108,7 +108,7 @@ public class RaidManager {
      */
     public static void loadRaids() {
         RaidBot bot = RaidBot.getInstance();
-        Database db = bot.getDatabase();
+        SqliteDatabaseDAOImpl db = bot.getDatabase();
 
         try {
             QueryResult results = db.query("SELECT * FROM `raids`", new String[]{});

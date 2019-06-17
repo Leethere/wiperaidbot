@@ -2,7 +2,7 @@ package me.cbitler.raidbot.models;
 
 import lombok.Data;
 import me.cbitler.raidbot.RaidBot;
-import me.cbitler.raidbot.database.Database;
+import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.utility.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -183,7 +183,7 @@ public class Raid {
         // rename in database
         String rolesString = RaidManager.formatRolesForDatabase(roles);
         try {
-            Database db = RaidBot.getInstance().getDatabase();
+            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
             db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, messageId });
             db.update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
@@ -216,7 +216,7 @@ public class Raid {
         // rename in database
         String rolesString = RaidManager.formatRolesForDatabase(roles);
         try {
-            Database db = RaidBot.getInstance().getDatabase();
+            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
             db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, messageId });
             return 0;
@@ -243,7 +243,7 @@ public class Raid {
         // rename in database
         String rolesString = RaidManager.formatRolesForDatabase(roles);
         try {
-            Database db = RaidBot.getInstance().getDatabase();
+            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
             db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, messageId });
             return 0;
@@ -272,7 +272,7 @@ public class Raid {
         // delete in database
         String rolesString = RaidManager.formatRolesForDatabase(roles);
         try {
-            Database db = RaidBot.getInstance().getDatabase();
+            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
             db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, messageId });
             return 0;

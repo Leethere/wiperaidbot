@@ -2,8 +2,8 @@ package me.cbitler.raidbot;
 
 import me.cbitler.raidbot.commands.*;
 import me.cbitler.raidbot.creation.CreationStep;
+import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.edit.EditStep;
-import me.cbitler.raidbot.database.Database;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.handlers.ChannelMessageHandler;
@@ -46,7 +46,7 @@ public class RaidBot {
     //TODO: This should be moved to it's own settings thing
     private HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
 
-    private Database db;
+    private SqliteDatabaseDAOImpl db;
 
     /**
      * Create a new instance of the raid bot with the specified JDA api
@@ -57,7 +57,7 @@ public class RaidBot {
 
         this.jda = jda;
         jda.addEventListener(new DMHandler(this), new ChannelMessageHandler(), new ReactionHandler());
-        db = new Database("events.db");
+        db = new SqliteDatabaseDAOImpl("events.db");
         db.connect();
         RaidManager.loadRaids();
 
@@ -150,7 +150,7 @@ public class RaidBot {
      * Get the database that the bot is using
      * @return The database that the bot is using
      */
-    public Database getDatabase() {
+    public SqliteDatabaseDAOImpl getDatabase() {
         return db;
     }
 
