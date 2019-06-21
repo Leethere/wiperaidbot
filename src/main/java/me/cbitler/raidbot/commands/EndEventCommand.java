@@ -10,7 +10,9 @@ import net.dv8tion.jda.core.entities.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EndRaidCommand implements Command {
+public class EndEventCommand implements Command {
+    public static final String END_EVENT_COMMAND = "endEvent";
+
     @Override
     public void handleCommand(String command, String[] args, TextChannel channel, User author) {
         Member member = channel.getGuild().getMember(author);

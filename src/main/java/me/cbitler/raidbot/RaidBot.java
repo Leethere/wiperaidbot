@@ -61,9 +61,9 @@ public class RaidBot {
         db.connect();
         RaidManager.loadRaids();
 
-        CommandRegistry.addCommand("help", new HelpCommand());
-        CommandRegistry.addCommand("info", new InfoCommand());
-        CommandRegistry.addCommand("endEvent", new EndRaidCommand());
+        CommandRegistry.addCommand(HelpCommand.HELP_COMMAND, new HelpCommand());
+        CommandRegistry.addCommand(InfoCommand.INFO_COMMAND, new InfoCommand());
+        CommandRegistry.addCommand(EndEventCommand.END_EVENT_COMMAND, new EndEventCommand());
 
         new Thread(() -> {
             while (true) {
