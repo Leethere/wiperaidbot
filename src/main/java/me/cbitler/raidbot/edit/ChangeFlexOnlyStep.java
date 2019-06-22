@@ -2,6 +2,7 @@ package me.cbitler.raidbot.edit;
 
 import java.util.List;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.models.RaidRole;
@@ -56,7 +57,7 @@ public class ChangeFlexOnlyStep implements EditStep {
                 finished = true; // we are done after we try to add
                 boolean newStatus = false;
                 if(inputNumber==1) newStatus = true;
-                int out = raid.changeFlexOnlyRole(roleID, newStatus);
+                int out = SqliteDAL.getInstance().getRaidDao().changeFlexOnlyRole(raid, roleID, newStatus);
                 if (out == 0) { // success
                     final String statusChange = newStatus ? "enabled" : "disabled";
                     e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully *" + statusChange + "* `flex only` status.").queue());

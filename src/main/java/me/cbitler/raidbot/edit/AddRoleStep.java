@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.edit;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.models.RaidRole;
@@ -32,7 +33,7 @@ public class AddRoleStep implements EditStep {
                 int amnt = Integer.parseInt(parts[0]);
                 String roleName = parts[1];
                 Raid raid = RaidManager.getRaid(messageID);
-                int out = raid.addRole(new RaidRole(amnt, roleName));
+                int out = SqliteDAL.getInstance().getRaidDao().addRole(raid, new RaidRole(amnt, roleName));
                 if(out == 0) {
                     e.getChannel().sendMessage("Role added.").queue();
                     raid.updateMessage();

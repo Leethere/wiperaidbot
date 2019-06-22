@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.edit;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
@@ -24,7 +25,7 @@ public class EditDescriptionStep implements EditStep {
     public boolean handleDM(PrivateMessageReceivedEvent e) {
         Raid raid = RaidManager.getRaid(messageID);
         raid.setDescription(e.getMessage().getRawContent());
-        if (raid.updateDescriptionDB()) {
+        if (SqliteDAL.getInstance().getRaidDao().updateDescriptionDB(raid)) {
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Description successfully updated in database.").queue());
         } else {
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Description could not be updated in database.").queue());	

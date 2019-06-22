@@ -56,7 +56,7 @@ public class RaidManager {
                         if (newRaid.isOpenWorld())
                             emoteList = Reactions.getOpenWorldEmotes();
                         else
-                            emoteList = Reactions.getEmotes();
+                            emoteList = Reactions.getCoreClassEmotes();
                         for (Emote emote : emoteList)
                             message1.addReaction(emote).queue();
                     } else {

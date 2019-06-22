@@ -2,6 +2,7 @@ package me.cbitler.raidbot.edit;
 
 import java.util.List;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.models.RaidRole;
@@ -41,7 +42,7 @@ public class DeleteRoleStep implements EditStep {
     	if (valid == false)
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Invalid choice. Try again.").queue());
     	else {
-    		int out = raid.deleteRole(roleID);
+    		int out = SqliteDAL.getInstance().getRaidDao().deleteRole(raid, roleID);
     		if (out == 0) { // success
     			e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully deleted role.").queue());
     			raid.updateMessage();
