@@ -1,14 +1,18 @@
 package me.cbitler.raidbot.raids;
 
 import me.cbitler.raidbot.RaidBot;
-import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
+import me.cbitler.raidbot.database.sqlite.dao.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidRole;
 import me.cbitler.raidbot.utility.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Emote;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -162,7 +166,7 @@ public class RaidManager {
 
                 Raid raid = RaidManager.getRaid(raidId);
                 if (raid != null) {
-                    raid.addUser(id, name, spec, role, false, false);
+                    SqliteDAL.getInstance().getUsersDao().addUser(raid, id, name, spec, role, false, false);
                 }
             }
 
@@ -177,7 +181,7 @@ public class RaidManager {
 
                 Raid raid = RaidManager.getRaid(raidId);
                 if (raid != null) {
-                    raid.addUserFlexRole(id, name, spec, role, false, false);
+                    SqliteDAL.getInstance().getUsersFlexRolesDao().addUserFlexRole(raid, id, name, spec, role, false, false);
                 }
             }
 

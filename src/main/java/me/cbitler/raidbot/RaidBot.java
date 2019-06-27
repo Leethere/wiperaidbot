@@ -7,7 +7,7 @@ import me.cbitler.raidbot.commands.InfoCommand;
 import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.database.sqlite.SqliteDAL;
-import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
+import me.cbitler.raidbot.database.sqlite.dao.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.edit.EditStep;
 import me.cbitler.raidbot.handlers.ChannelMessageHandler;

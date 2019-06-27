@@ -1,12 +1,14 @@
-package me.cbitler.raidbot.database.sqlite;
+package me.cbitler.raidbot.database.sqlite.dao;
 
-import me.cbitler.raidbot.database.sqlite.dao.BaseFunctionality;
 import me.cbitler.raidbot.database.sqlite.tables.RaidTable;
 import me.cbitler.raidbot.database.sqlite.tables.ServerSettingsTable;
 import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
 import me.cbitler.raidbot.database.sqlite.tables.UserTable;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Class for managing the SQLite database for this bot

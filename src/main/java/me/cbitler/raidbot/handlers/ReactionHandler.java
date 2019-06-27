@@ -1,6 +1,7 @@
 package me.cbitler.raidbot.handlers;
 
 import me.cbitler.raidbot.RaidBot;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.deselection.DeselectIdleStep;
 import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.models.Raid;
@@ -22,7 +23,7 @@ public class ReactionHandler extends ListenerAdapter {
         if (raid != null) {
         	Emote emote = e.getReactionEmote().getEmote();
         	if (emote != null) {
-        		if (raid.isOpenWorld() == false) {
+        		if (!raid.isOpenWorld()) {
                     if (Reactions.getSpecs().contains(emote.getName())) {
                         RaidBot bot = RaidBot.getInstance();
                         // check if the user is already selecting a role
@@ -52,16 +53,19 @@ public class ReactionHandler extends ListenerAdapter {
         				if (raid.isUserInRaid(e.getUser().getId()) || raid.getUserNumFlexRoles(e.getUser().getId()) > 0) { // already signed up
         					e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You are already signed up for this event.").queue());                 	       
         				} else {
-        					if (raid.addUserOpenWorld(e.getUser().getId(), e.getUser().getName())) 
-        						e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully signed up for the event.").queue());                 	       
-        					else 
-        						e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Sign-up failed.").queue());                 	                     		
+        					if (raid.addUserOpenWorld(raid, e.getUser().getId(), e.getUser().getName())) {
+                                e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully signed up for the event.").queue());
+                            } else {
+                                e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Sign-up failed.").queue());
+                            }
         				}
         			} else if (emote.getName().equalsIgnoreCase("X_")) {
-        				if (raid.removeUser(e.getUser().getId())) 
-        					e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully removed from event.").queue());                 	       
-            			else
-        					e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You are not signed up for this event.").queue());                 	       	
+						boolean removedSuccessfully = SqliteDAL.getInstance().getUsersDao().removeUser(raid, e.getUser().getId());
+						if (removedSuccessfully) {
+                            e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully removed from event.").queue());
+                        } else {
+                            e.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You are not signed up for this event.").queue());
+                        }
         			}
         		}
             }

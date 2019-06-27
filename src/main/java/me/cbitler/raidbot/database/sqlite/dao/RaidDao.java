@@ -1,7 +1,5 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
-import me.cbitler.raidbot.RaidBot;
-import me.cbitler.raidbot.database.sqlite.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidRole;
@@ -104,7 +102,7 @@ public class RaidDao extends BaseFunctionality{
 
         String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
         try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
+            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });
             return 0;
         } catch (SQLException e) {
@@ -143,12 +141,11 @@ public class RaidDao extends BaseFunctionality{
         // rename in database
         String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
         try {
-            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
+            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });
-            db.update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
+            update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
                     new String[] { newname, oldName, raid.getMessageId() });
-            db.update("UPDATE `raidUsersFlexRoles` SET `role`=? WHERE `role`=? AND `raidId`=?",
+            update("UPDATE `raidUsersFlexRoles` SET `role`=? WHERE `role`=? AND `raidId`=?",
                     new String[] { newname, oldName, raid.getMessageId() });
 
             return 0;
@@ -233,8 +230,7 @@ public class RaidDao extends BaseFunctionality{
     private int updateRaidRoles(Raid raid) {
         String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
         try {
-            SqliteDatabaseDAOImpl db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
+            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });
             return 0;
         } catch (SQLException e) {

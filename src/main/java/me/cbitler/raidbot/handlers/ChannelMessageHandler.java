@@ -77,7 +77,7 @@ public class ChannelMessageHandler extends ListenerAdapter {
                     Raid raid = RaidManager.getRaid(messageId);
 
                     if (raid != null && raid.getServerId().equalsIgnoreCase(e.getGuild().getId())) {
-                        raid.removeUserByName(name);
+                        raid.removeUserByName(raid, name);
                     } else {
                         e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Non-existant event.").queue());
                     }

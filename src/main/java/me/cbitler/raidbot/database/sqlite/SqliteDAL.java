@@ -1,15 +1,17 @@
 package me.cbitler.raidbot.database.sqlite;
 
 import lombok.Getter;
-import me.cbitler.raidbot.database.sqlite.dao.RaidDao;
+import me.cbitler.raidbot.database.sqlite.dao.*;
 
+@Getter
 public class SqliteDAL {
     private static SqliteDAL instance = null;
 
-    @Getter
     private SqliteDatabaseDAOImpl sqliteDatabaseDAO;
-    @Getter
     private RaidDao raidDao;
+    private ServerSettingsDao serverSettingsDao;
+    private UsersDao usersDao;
+    private UsersFlexRolesDao usersFlexRolesDao;
 
     public static synchronized SqliteDAL getInstance() {
         if (instance == null) {
@@ -28,5 +30,8 @@ public class SqliteDAL {
 
     private void initializeDao() {
         raidDao = new RaidDao(sqliteDatabaseDAO.getConnection());
+        serverSettingsDao = new ServerSettingsDao(sqliteDatabaseDAO.getConnection());
+        usersDao = new UsersDao(sqliteDatabaseDAO.getConnection());
+        usersFlexRolesDao = new UsersFlexRolesDao(sqliteDatabaseDAO.getConnection());
     }
 }
