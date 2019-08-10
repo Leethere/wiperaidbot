@@ -58,7 +58,7 @@ public class DeselectIdleStep implements DeselectionStep {
         		}
         	} else if (choiceId == 2) { // all
         		nextStep = null;
-				SqliteDAL.getInstance().getUsersDao().removeUser(raid, e.getAuthor().getId());
+				SqliteDAL.getInstance().getUsersDao().removeUserFromRaid(raid, e.getAuthor().getId());
         		return true;
         	} else { // some other integer
         		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Invalid choice. Try again or type *done* to quit deselection.").queue());

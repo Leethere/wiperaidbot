@@ -6,7 +6,6 @@ import me.cbitler.raidbot.commands.EndEventCommand;
 import me.cbitler.raidbot.commands.HelpCommand;
 import me.cbitler.raidbot.commands.InfoCommand;
 import me.cbitler.raidbot.creation.CreationStep;
-import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.database.sqlite.dao.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.deselection.DeselectionStep;
@@ -22,7 +21,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;

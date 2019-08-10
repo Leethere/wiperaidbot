@@ -367,7 +367,7 @@ public class Raid {
             }
         }
 
-        SqliteDAL.getInstance().getUsersDao().removeUser(raid, idToRemove);
+        SqliteDAL.getInstance().getUsersDao().removeUserFromRaid(raid, idToRemove);
     }
 
     /**

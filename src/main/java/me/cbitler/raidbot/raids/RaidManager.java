@@ -89,7 +89,8 @@ public class RaidManager {
         SqliteDatabaseDAOImpl db = bot.getDatabase();
 
         try {
-            QueryResult results = db.query("SELECT * FROM `raids`", new String[]{});
+
+            QueryResult results = SqliteDAL.getInstance().getRaidDao().getAllRaids();
             while (results.getResults().next()) {
                 String name = results.getResults().getString("name");
                 String description = results.getResults().getString("description");
@@ -129,7 +130,7 @@ public class RaidManager {
             results.getResults().close();
             results.getStmt().close();
 
-            QueryResult userResults = db.query("SELECT * FROM `raidUsers`", new String[]{});
+            QueryResult userResults = SqliteDAL.getInstance().getUsersDao().getAllUsers();
 
             while (userResults.getResults().next()) {
                 String id = userResults.getResults().getString("userId");
@@ -144,7 +145,7 @@ public class RaidManager {
                 }
             }
 
-            QueryResult userFlexRolesResults = db.query("SELECT * FROM `raidUsersFlexroles`", new String[]{});
+            QueryResult userFlexRolesResults = SqliteDAL.getInstance().getUsersFlexRolesDao().getAllFlexUsers();
 
             while (userFlexRolesResults.getResults().next()) {
                 String id = userFlexRolesResults.getResults().getString("userId");
@@ -196,12 +197,9 @@ public class RaidManager {
             }
 
             try {
-                RaidBot.getInstance().getDatabase().update("DELETE FROM `raids` WHERE `raidId` = ?",
-                        new String[] { messageId });
-                RaidBot.getInstance().getDatabase().update("DELETE FROM `raidUsers` WHERE `raidId` = ?",
-                        new String[] { messageId });
-                RaidBot.getInstance().getDatabase().update("DELETE FROM `raidUsersFlexRoles` WHERE `raidId` = ?",
-                        new String[] { messageId });
+                SqliteDAL.getInstance().getRaidDao().deleteRaid(messageId);
+                SqliteDAL.getInstance().getUsersDao().deleteRaid(messageId);
+                SqliteDAL.getInstance().getUsersFlexRolesDao().deleteRaid(messageId);
             } catch (Exception e) {
                 System.out.println("Error encountered deleting event.");
             }

@@ -1,12 +1,16 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
+import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidUser;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class UsersDao extends MessageUpdateFunctionality {
 
@@ -48,13 +52,44 @@ public class UsersDao extends MessageUpdateFunctionality {
         return true;
     }
 
+    public void deleteRaid(String messageId) throws SQLException {
+        update("DELETE FROM `raidUsers` WHERE `raidId` = ?", new String[]{messageId});
+    }
+
+    public QueryResult getAllUsers() throws SQLException {
+        return query("SELECT * FROM `raidUsers`", new String[]{});
+    }
+
+    /**
+     * Remove a user from their main role
+     *
+     * @param id The id of the user being removed
+     */
+    public void removeUserFromMainRoles(Raid raid, String id) {
+        Iterator<Map.Entry<RaidUser, String>> users = raid.getUserToRole().entrySet().iterator();
+        while (users.hasNext()) {
+            Map.Entry<RaidUser, String> user = users.next();
+            if (user.getKey().getId().equalsIgnoreCase(id)) {
+                users.remove();
+            }
+        }
+
+        try {
+            update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?", new String[]{id, raid.getMessageId()});
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        updateMessage(raid);
+    }
+
     /**
      * Remove a user from this raid. This also updates the database to remove them
      * from the raid and any flex roles they are in
      *
      * @param id The user's id
      */
-    public boolean removeUser(Raid raid, String id) {
+    public boolean removeUserFromRaid(Raid raid, String id) {
         boolean found = false;
         Iterator<Map.Entry<RaidUser, String>> users = raid.getUserToRole().entrySet().iterator();
         while (users.hasNext()) {
@@ -85,28 +120,5 @@ public class UsersDao extends MessageUpdateFunctionality {
             updateMessage(raid);
 
         return found;
-    }
-
-    /**
-     * Remove a user from their main role
-     *
-     * @param id The id of the user being removed
-     */
-    public void removeUserFromMainRoles(Raid raid, String id) {
-        Iterator<Map.Entry<RaidUser, String>> users = raid.getUserToRole().entrySet().iterator();
-        while (users.hasNext()) {
-            Map.Entry<RaidUser, String> user = users.next();
-            if (user.getKey().getId().equalsIgnoreCase(id)) {
-                users.remove();
-            }
-        }
-
-        try {
-            update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?", new String[]{id, raid.getMessageId()});
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        updateMessage(raid);
     }
 }

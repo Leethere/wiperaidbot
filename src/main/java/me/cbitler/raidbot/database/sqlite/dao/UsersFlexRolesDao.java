@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
+import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidUser;
@@ -38,7 +39,7 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
         if (db_insert) {
             try {
                 update("INSERT INTO `raidUsersFlexRoles` (`userId`, `username`, `spec`, `role`, `raidId`)"
-                                + " VALUES (?,?,?,?,?)", new String[] { id, name, spec, role, raid.getMessageId() });
+                        + " VALUES (?,?,?,?,?)", new String[]{id, name, spec, role, raid.getMessageId()});
             } catch (Exception e) {
                 return false;
             }
@@ -55,10 +56,18 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
         return true;
     }
 
+    public void deleteRaid(String messageId) throws SQLException {
+        update("DELETE FROM `raidUsersFlexRoles` WHERE `raidId` = ?", new String[]{messageId});
+    }
+
+    public QueryResult getAllFlexUsers() throws SQLException {
+        return query("SELECT * FROM `raidUsersFlexroles`", new String[]{});
+    }
+
     /**
      * Remove a user from their main role
      *
-     * @param id The id of the user being removed
+     * @param id   The id of the user being removed
      * @param role The role that should be removed
      * @param spec The class specialization that should be removed
      * @return true if user was signed up for this role and class, false otherwise
@@ -82,7 +91,7 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
 
         try {
             update("DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ? and `role` = ? and `spec` = ?",
-                    new String[] { id, raid.getMessageId(), role, spec });
+                    new String[]{id, raid.getMessageId(), role, spec});
         } catch (SQLException e) {
             e.printStackTrace();
         }
