@@ -1,9 +1,9 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
-import me.cbitler.raidbot.models.FlexRole;
-import me.cbitler.raidbot.models.Raid;
-import me.cbitler.raidbot.models.RaidRole;
-import me.cbitler.raidbot.models.RaidUser;
+import me.cbitler.raidbot.RaidBot;
+import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
+import me.cbitler.raidbot.models.*;
 import me.cbitler.raidbot.raids.RaidManager;
 
 import java.sql.Connection;
@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static me.cbitler.raidbot.raids.RaidManager.formatRolesForDatabase;
 
 public class RaidDao extends BaseFunctionality{
     public RaidDao(Connection connection) {
@@ -100,7 +102,7 @@ public class RaidDao extends BaseFunctionality{
         }
         raid.getRoles().add(newrole);
 
-        String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
+        String rolesString = formatRolesForDatabase(raid.getRoles());
         try {
             update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });
@@ -139,7 +141,7 @@ public class RaidDao extends BaseFunctionality{
         }
 
         // rename in database
-        String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
+        String rolesString = formatRolesForDatabase(raid.getRoles());
         try {
             update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });
@@ -212,6 +214,35 @@ public class RaidDao extends BaseFunctionality{
     }
 
     /**
+     * Insert a raid into the database
+     *
+     * @param raid      The raid to insert
+     * @param messageId The embedded message / 'raidId'
+     * @param serverId  The serverId related to this raid
+     * @param channelId The channelId for the announcement of this raid
+     * @return True if inserted, false otherwise
+     */
+    public boolean insertToDatabase(PendingRaid raid, String messageId, String serverId, String channelId) {
+        RaidBot bot = RaidBot.getInstance();
+        SqliteDatabaseDAOImpl db = bot.getDatabase();
+
+        String roles = formatRolesForDatabase(raid.getRolesWithNumbers());
+
+        try {
+            update(
+                    "INSERT INTO `raids` (`raidId`, `serverId`, `channelId`, `isOpenWorld`, `leader`, `name`, `description`, `date`, `time`, `roles`) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    new String[] { messageId, serverId, channelId, Boolean.toString(raid.isOpenWorld()),
+                            raid.getLeaderName(), raid.getName(), raid.getDescription(), raid.getDate(), raid.getTime(),
+                            roles });
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get the number of users in a role
      *
      * @param role The name of the role
@@ -228,7 +259,7 @@ public class RaidDao extends BaseFunctionality{
     }
 
     private int updateRaidRoles(Raid raid) {
-        String rolesString = RaidManager.formatRolesForDatabase(raid.getRoles());
+        String rolesString = formatRolesForDatabase(raid.getRoles());
         try {
             update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[] { rolesString, raid.getMessageId() });

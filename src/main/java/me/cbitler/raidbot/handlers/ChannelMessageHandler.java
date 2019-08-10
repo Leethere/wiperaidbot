@@ -5,6 +5,7 @@ import me.cbitler.raidbot.commands.Command;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.creation.RunNameStep;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.edit.EditStep;
 import me.cbitler.raidbot.edit.EditIdleStep;
 import me.cbitler.raidbot.models.Raid;
@@ -126,7 +127,7 @@ public class ChannelMessageHandler extends ListenerAdapter {
             if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "seteventmanagerrole")) {
                 String[] commandParts = e.getMessage().getRawContent().split(" ");
                 String raidLeaderRole = combineArguments(commandParts, 1);
-                RaidBot.getInstance().setRaidLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
+                SqliteDAL.getInstance().getServerSettingsDao().setRaidLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
                 e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Event manager role updated to: " + raidLeaderRole).queue());
                 e.getMessage().delete().queue();
             }

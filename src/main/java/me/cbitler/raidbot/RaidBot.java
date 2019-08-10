@@ -1,5 +1,6 @@
 package me.cbitler.raidbot;
 
+import lombok.Getter;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.commands.EndEventCommand;
 import me.cbitler.raidbot.commands.HelpCommand;
@@ -48,6 +49,7 @@ public class RaidBot {
     private Set<String> editList = new HashSet<>();
 
     //TODO: This should be moved to it's own settings thing
+    @Getter
     private HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
 
     private SqliteDatabaseDAOImpl db;
@@ -168,53 +170,6 @@ public class RaidBot {
         return db;
     }
 
-    /**
-     * Get the raid leader role for a specific server.
-     * This works by caching the role once it's retrieved once, and returning the default if a server hasn't set one.
-     *
-     * @param serverId the ID of the server
-     * @return The name of the role that is considered the raid leader for that server
-     */
-    public String getRaidLeaderRole(String serverId) {
-        if (raidLeaderRoleCache.get(serverId) != null) {
-            return raidLeaderRoleCache.get(serverId);
-        } else {
-            try {
-                QueryResult results = db.query("SELECT `raid_leader_role` FROM `serverSettings` WHERE `serverId` = ?",
-                        new String[]{serverId});
-                if (results.getResults().next()) {
-                    raidLeaderRoleCache.put(serverId, results.getResults().getString("raid_leader_role"));
-                    return raidLeaderRoleCache.get(serverId);
-                } else {
-                    return "Raid Leader";
-                }
-            } catch (Exception e) {
-                return "Raid Leader";
-            }
-        }
-    }
-
-    /**
-     * Set the raid leader role for a server. This also updates it in SQLite
-     *
-     * @param serverId The server ID
-     * @param role     The role name
-     */
-    public void setRaidLeaderRole(String serverId, String role) {
-        raidLeaderRoleCache.put(serverId, role);
-        try {
-            db.update("INSERT INTO `serverSettings` (`serverId`,`raid_leader_role`) VALUES (?,?)",
-                    new String[]{serverId, role});
-        } catch (SQLException e) {
-            //TODO: There is probably a much better way of doing this
-            try {
-                db.update("UPDATE `serverSettings` SET `raid_leader_role` = ? WHERE `serverId` = ?",
-                        new String[]{role, serverId});
-            } catch (SQLException e1) {
-                // Not much we can do if there is also an insert error
-            }
-        }
-    }
 
     /**
      * Get the current instance of the bot

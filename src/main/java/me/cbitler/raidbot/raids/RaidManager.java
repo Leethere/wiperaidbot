@@ -27,8 +27,10 @@ import java.util.List;
  * @author Franziska Mueller
  */
 public class RaidManager {
+    private RaidManager() {
+    }
 
-    static List<Raid> raids = new ArrayList<>();
+    private static List<Raid> raids = new ArrayList<>();
 
     /**
      * Create a raid. This turns a PendingRaid object into a Raid object and inserts
@@ -42,11 +44,11 @@ public class RaidManager {
 
         Guild guild = RaidBot.getInstance().getServer(raid.getServerId());
         List<TextChannel> channels = guild.getTextChannelsByName(raid.getAnnouncementChannel(), true);
-        if (channels.size() > 0) {
+        if (!channels.isEmpty()) {
             // We always go with the first channel if there is more than one
             try {
                 channels.get(0).sendMessage(message).queue(message1 -> {
-                    boolean inserted = insertToDatabase(raid, message1.getId(), message1.getGuild().getId(),
+                    boolean inserted = SqliteDAL.getInstance().getRaidDao().insertToDatabase(raid, message1.getId(), message1.getGuild().getId(),
                             message1.getChannel().getId());
                     if (inserted) {
                         Raid newRaid = new Raid(message1.getId(), message1.getGuild().getId(),
@@ -75,35 +77,7 @@ public class RaidManager {
         }
     }
 
-    /**
-     * Insert a raid into the database
-     *
-     * @param raid      The raid to insert
-     * @param messageId The embedded message / 'raidId'
-     * @param serverId  The serverId related to this raid
-     * @param channelId The channelId for the announcement of this raid
-     * @return True if inserted, false otherwise
-     */
-    private static boolean insertToDatabase(PendingRaid raid, String messageId, String serverId, String channelId) {
-        RaidBot bot = RaidBot.getInstance();
-        SqliteDatabaseDAOImpl db = bot.getDatabase();
-
-        String roles = formatRolesForDatabase(raid.getRolesWithNumbers());
-
-        try {
-            db.update(
-                    "INSERT INTO `raids` (`raidId`, `serverId`, `channelId`, `isOpenWorld`, `leader`, `name`, `description`, `date`, `time`, `roles`) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    new String[] { messageId, serverId, channelId, Boolean.toString(raid.isOpenWorld()),
-                            raid.getLeaderName(), raid.getName(), raid.getDescription(), raid.getDate(), raid.getTime(),
-                            roles });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        return true;
-    }
-
+    //TODO: FIGURE OUT WHAT THIS METHOD DOES, AND MOVE OR DELETE IT
     /**
      * Load raids This first queries all of the raids and loads the raid data and
      * adds the raids to the raid list Then, it queries the raid users and inserts

@@ -157,7 +157,7 @@ public class Raid {
      * @return true if the user was added, false otherwise
      */
     public boolean addUserOpenWorld(Raid raid, String id, String name) {
-        boolean success = false;
+        boolean success;
 
         String roleName = roles.get(0).getName();
         if (isValidNotFullRole(roleName)) // there is still space
