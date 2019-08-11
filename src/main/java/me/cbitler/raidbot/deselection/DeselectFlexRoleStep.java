@@ -4,6 +4,7 @@ package me.cbitler.raidbot.deselection;
 
 import java.util.ArrayList;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.utility.Reactions;
@@ -45,7 +46,8 @@ public class DeselectFlexRoleStep implements DeselectionStep {
             // remove all
             ArrayList<String> removedRaidUsers = new ArrayList<String>();
             for (FlexRole rRole : rRoles) {
-                if(raid.removeUserFromFlexRoles(e.getAuthor().getId(), rRole.getRole(), rRole.getSpec())){
+                boolean removedSuccessfully = SqliteDAL.getInstance().getUsersFlexRolesDao().removeUserFromFlexRoles(raid, e.getAuthor().getId(), rRole.getRole(), rRole.getSpec());
+                if(removedSuccessfully){
                     removedRaidUsers.add("\""+rRole.getSpec()+", "+rRole.getRole()+"\"");
                 }
             }
@@ -65,7 +67,8 @@ public class DeselectFlexRoleStep implements DeselectionStep {
             		int roleSelector = Integer.parseInt(role) - 2;
             		if(roleSelector >= 0 && roleSelector < rRoles.size()){
             			FlexRole raidRole = rRoles.get(roleSelector);
-            			if(raid.removeUserFromFlexRoles(e.getAuthor().getId(), raidRole.getRole(), raidRole.getSpec())){
+                        boolean removedSuccessfully = SqliteDAL.getInstance().getUsersFlexRolesDao().removeUserFromFlexRoles(raid, e.getAuthor().getId(), raidRole.getRole(), raidRole.getSpec());
+                        if(removedSuccessfully){
             				removedRaidUsers.add("\""+raidRole.getSpec()+", "+raidRole.getRole()+"\"");
             			}
             		}

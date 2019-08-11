@@ -2,15 +2,16 @@ package me.cbitler.raidbot.models;
 
 import lombok.Data;
 import me.cbitler.raidbot.RaidBot;
-import me.cbitler.raidbot.database.Database;
-import me.cbitler.raidbot.raids.RaidManager;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.utility.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a raid and has methods for adding/removing users, user flex roles,
@@ -58,230 +59,6 @@ public class Raid {
         this.time = time;
         this.isOpenWorld = isOpenWorld;
     }
-
-    /**
-     * Updates the name of the raid in the database
-     */
-    public boolean updateNameDB() {
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `name`=? WHERE `raidId`=?",
-                    new String[] { name, messageId });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Updates the leader of the raid in the database
-     */
-    public boolean updateLeaderDB() {
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `leader`=? WHERE `raidId`=?",
-                    new String[] { raidLeaderName, messageId });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Updates the description of the raid in the database
-     */
-    public boolean updateDescriptionDB() {
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `description`=? WHERE `raidId`=?",
-                    new String[] { description, messageId });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Updates the date of the raid in the database
-     */
-    public boolean updateDateDB() {
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `date`=? WHERE `raidId`=?",
-                    new String[] { date, messageId });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Updates the time of the raid in the database
-     */
-    public boolean updateTimeDB() {
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `time`=? WHERE `raidId`=?",
-                    new String[] { time, messageId });
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Add a new role to the event
-     * @param newrole new raid role
-     * @return 0 success, 1 role exists, 2 SQL error
-     */
-    public int addRole(RaidRole newrole) {
-        for (RaidRole role : roles) {
-            if (role.getName().equalsIgnoreCase(newrole.getName())) {
-                return 1;
-            }
-        }
-        roles.add(newrole);
-
-        String rolesString = RaidManager.formatRolesForDatabase(roles);
-        try {
-            RaidBot.getInstance().getDatabase().update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[] { rolesString, messageId });
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
-    }
-
-    /**
-     * Rename a role of the event
-     * @param id role
-     * @param newname new name for the role
-     * @return 0 success, 1 role exists, 2 SQL error
-     */
-    public int renameRole(int id, String newname) {
-        for (RaidRole role : roles) {
-            if (role.getName().equalsIgnoreCase(newname)) {
-                return 1;
-            }
-        }
-        String oldName = roles.get(id).getName();
-        roles.get(id).setName(newname);
-
-        // iterate over users' roles and rename
-        for (Map.Entry<RaidUser, String> user : userToRole.entrySet()) {
-            if (user.getValue().equals(oldName))
-                user.setValue(newname);
-        }
-        for (Map.Entry<RaidUser, List<FlexRole>> flex : usersToFlexRoles.entrySet()) {
-            for (FlexRole frole : flex.getValue()) {
-                if (frole.getRole().equals(oldName))
-                    frole.setRole(newname);
-            }
-        }
-
-        // rename in database
-        String rolesString = RaidManager.formatRolesForDatabase(roles);
-        try {
-            Database db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[] { rolesString, messageId });
-            db.update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
-                    new String[] { newname, oldName, messageId });
-            db.update("UPDATE `raidUsersFlexRoles` SET `role`=? WHERE `role`=? AND `raidId`=?",
-                    new String[] { newname, oldName, messageId });
-
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
-    }
-
-
-    /**
-     * Change amount for a role of the event
-     * @param id role
-     * @param newamount new amount for the role
-     * @return 0 success, 1 number of users > new amount, 2 SQL error
-     */
-    public int changeAmountRole(int id, int newamount) {
-        String roleName = roles.get(id).getName();
-        int numberUsers = getUserNumberInRole(roleName);
-        if (newamount < numberUsers)
-            return 1;
-
-        roles.get(id).setAmount(newamount);
-
-        // rename in database
-        String rolesString = RaidManager.formatRolesForDatabase(roles);
-        try {
-            Database db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[] { rolesString, messageId });
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
-    }
-
-    /**
-     * Change flex only status of a role
-     * @param id role
-     * @param newStatus new amount for the role
-     * @return 0 success, 1 number of users > 0 when enabling flexOnly, 2 SQL error
-     */
-    public int changeFlexOnlyRole(int id, boolean newStatus) {
-        String roleName = roles.get(id).getName();
-        int numberUsers = getUserNumberInRole(roleName);
-        if (0 < numberUsers)
-            return 1;
-
-        roles.get(id).setFlexOnly(newStatus);
-
-        // rename in database
-        String rolesString = RaidManager.formatRolesForDatabase(roles);
-        try {
-            Database db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[] { rolesString, messageId });
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
-    }
-
-
-    /**
-     * Delete a role from the event
-     * @param id role
-     * @return 0 success, 1 number of users > 0, 2 SQL error
-     */
-    public int deleteRole(int id) {
-        String roleName = roles.get(id).getName();
-        int numberUsers = getUserNumberInRole(roleName);
-        int numberUsersFlex = getUserNumberInFlexRole(roleName);
-
-        if (numberUsers > 0 || numberUsersFlex > 0)
-            return 1;
-
-        roles.remove(id);
-
-        // delete in database
-        String rolesString = RaidManager.formatRolesForDatabase(roles);
-        try {
-            Database db = RaidBot.getInstance().getDatabase();
-            db.update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[] { rolesString, messageId });
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
-    }
-
 
     /**
      * Check if a specific role is valid, and whether or not it's full
@@ -356,26 +133,6 @@ public class Raid {
     }
 
     /**
-     * Get the number of users in a flex role
-     *
-     * @param role The name of the role
-     * @return The number of users in the role
-     */
-    private int getUserNumberInFlexRole(String role) {
-        int inRole = 0;
-        for (Map.Entry<RaidUser, List<FlexRole>> flex : usersToFlexRoles.entrySet()) {
-            if (flex.getKey() != null) {
-                for (FlexRole frole : flex.getValue()) {
-                    if (frole.getRole().equalsIgnoreCase(role))
-                        inRole += 1;
-                }
-            }
-        }
-
-        return inRole;
-    }
-
-    /**
      * Get list of users in a role
      *
      * @param role The name of the role
@@ -393,95 +150,20 @@ public class Raid {
     }
 
     /**
-     * Add a user to this raid. This first creates the user and attempts to insert
-     * it into the database, if needed Then it adds them to list of raid users with
-     * their role
-     *
-     * @param id        The id of the user
-     * @param name      The name of the user
-     * @param spec      The specialization they are playing
-     * @param role      The role they will be playing in the raid
-     * @param db_insert Whether or not the user should be inserted. This is false
-     *                  when the roles are loaded from the database.
-     * @return true if the user was added, false otherwise
-     */
-    public boolean addUser(String id, String name, String spec, String role, boolean db_insert,
-            boolean update_message) {
-        RaidUser user = new RaidUser(id, name, spec, role);
-
-        if (db_insert) {
-            try {
-                RaidBot.getInstance().getDatabase()
-                        .update("INSERT INTO `raidUsers` (`userId`, `username`, `spec`, `role`, `raidId`)"
-                                + " VALUES (?,?,?,?,?)", new String[] { id, name, spec, role, this.messageId });
-            } catch (SQLException e) {
-                return false;
-            }
-        }
-
-        userToRole.put(user, role);
-        usersToFlexRoles.computeIfAbsent(new RaidUser(id, name, "", ""), k -> new ArrayList<FlexRole>());
-
-        if (update_message) {
-            updateMessage();
-        }
-        return true;
-    }
-
-    /**
-     * Add a user to a flex role in this raid. This first creates the user and
-     * attempts to insert it into the database, if needed Then it adds them to list
-     * of raid users' flex roles with their flex role
-     *
-     * @param id        The id of the user
-     * @param name      The name of the user
-     * @param spec      The specialization they are playing
-     * @param role      The flex role they will be playing in the raid
-     * @param db_insert Whether or not the user should be inserted. This is false
-     *                  when the roles are loaded from the database.
-     * @return true if the user was added, false otherwise
-     */
-    public boolean addUserFlexRole(String id, String name, String spec, String role, boolean db_insert,
-            boolean update_message) {
-        RaidUser user = new RaidUser(id, name, "", "");
-        FlexRole frole = new FlexRole(spec, role);
-
-        if (db_insert) {
-            try {
-                RaidBot.getInstance().getDatabase()
-                        .update("INSERT INTO `raidUsersFlexRoles` (`userId`, `username`, `spec`, `role`, `raidId`)"
-                                + " VALUES (?,?,?,?,?)", new String[] { id, name, spec, role, this.messageId });
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        if (usersToFlexRoles.get(user) == null) {
-            usersToFlexRoles.put(user, new ArrayList<FlexRole>());
-        }
-
-        usersToFlexRoles.get(user).add(frole);
-        if (update_message) {
-            updateMessage();
-        }
-        return true;
-    }
-
-    /**
      * Add a user to this open world event with the default role
      *
      * @param id        The id of the user
      * @param name      The name of the user
      * @return true if the user was added, false otherwise
      */
-    public boolean addUserOpenWorld(String id, String name) {
-        boolean success = false;
+    public boolean addUserOpenWorld(Raid raid, String id, String name) {
+        boolean success;
 
         String roleName = roles.get(0).getName();
         if (isValidNotFullRole(roleName)) // there is still space
-            success = addUser(id, name, "", roleName, true, true);
+            success = SqliteDAL.getInstance().getUsersDao().addUser(raid, id, name, "", roleName, true, true);
         else
-            success = addUserFlexRole(id, name, "", roleName, true, true);
+            success = SqliteDAL.getInstance().getUsersFlexRolesDao().addUserFlexRole(raid, id, name, "", roleName, true, true);
 
         return success;
     }
@@ -499,48 +181,6 @@ public class Raid {
             }
         }
         return false;
-    }
-
-    /**
-     * Remove a user from this raid. This also updates the database to remove them
-     * from the raid and any flex roles they are in
-     *
-     * @param id The user's id
-     */
-    public boolean removeUser(String id) {
-        boolean found = false;
-        Iterator<Map.Entry<RaidUser, String>> users = userToRole.entrySet().iterator();
-        while (users.hasNext()) {
-            Map.Entry<RaidUser, String> user = users.next();
-            if (user.getKey().getId().equalsIgnoreCase(id)) {
-                users.remove();
-                found = true;
-            }
-        }
-
-        Iterator<Map.Entry<RaidUser, List<FlexRole>>> usersFlex = usersToFlexRoles.entrySet().iterator();
-        while (usersFlex.hasNext()) {
-            Map.Entry<RaidUser, List<FlexRole>> userFlex = usersFlex.next();
-            if (userFlex.getKey().getId().equalsIgnoreCase(id)) {
-                usersFlex.remove();
-                found = true;
-            }
-        }
-
-        try {
-            RaidBot.getInstance().getDatabase().update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?",
-                    new String[] { id, getMessageId() });
-            RaidBot.getInstance().getDatabase().update(
-                    "DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ?",
-                    new String[] { id, getMessageId() });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        if (found)
-            updateMessage();
-
-        return found;
     }
 
     /**
@@ -707,9 +347,10 @@ public class Raid {
     /**
      * Remove a user by their username
      *
+     * @param raid
      * @param name The name of the user being removed
      */
-    public void removeUserByName(String name) {
+    public void removeUserByName(Raid raid, String name) {
         String idToRemove = "";
         for (Map.Entry<RaidUser, String> entry : userToRole.entrySet()) {
             if (entry.getKey().getName().equalsIgnoreCase(name)) {
@@ -726,72 +367,8 @@ public class Raid {
             }
         }
 
-        removeUser(idToRemove);
+        SqliteDAL.getInstance().getUsersDao().removeUserFromRaid(raid, idToRemove);
     }
-
-
-    /**
-     * Remove a user from their main role
-     *
-     * @param id The id of the user being removed
-     */
-    public void removeUserFromMainRoles(String id) {
-        Iterator<Map.Entry<RaidUser, String>> users = userToRole.entrySet().iterator();
-        while (users.hasNext()) {
-            Map.Entry<RaidUser, String> user = users.next();
-            if (user.getKey().getId().equalsIgnoreCase(id)) {
-                users.remove();
-            }
-        }
-
-        try {
-            RaidBot.getInstance().getDatabase().update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?",
-                    new String[] { id, getMessageId() });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        updateMessage();
-    }
-
-
-    /**
-     * Remove a user from their main role
-     *
-     * @param id The id of the user being removed
-     * @param role The role that should be removed
-     * @param spec The class specialization that should be removed
-     * @return true if user was signed up for this role and class, false otherwise
-     */
-    public boolean removeUserFromFlexRoles(String id, String role, String spec) {
-        boolean found = false;
-        Iterator<Map.Entry<RaidUser, List<FlexRole>>> users = usersToFlexRoles.entrySet().iterator();
-        while (users.hasNext()) {
-            Map.Entry<RaidUser, List<FlexRole>> user = users.next();
-            if (user.getKey().getId().equalsIgnoreCase(id)) {
-                Iterator<FlexRole> froles = user.getValue().iterator();
-                while (froles.hasNext()) {
-                    FlexRole frole = froles.next();
-                    if (frole.getSpec().equals(spec) && frole.getRole().equals(role)) {
-                        froles.remove();
-                        found = true;
-                    }
-                }
-            }
-        }
-
-        try {
-            RaidBot.getInstance().getDatabase().update(
-                    "DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ? and `role` = ? and `spec` = ?",
-                    new String[] { id, getMessageId(), role, spec });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        updateMessage();
-        return found;
-    }
-
 
     /**
      * Get the number of flex roles a user has

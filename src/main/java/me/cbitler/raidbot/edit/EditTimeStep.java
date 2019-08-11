@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.edit;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
@@ -24,7 +25,7 @@ public class EditTimeStep implements EditStep {
     public boolean handleDM(PrivateMessageReceivedEvent e) {
         Raid raid = RaidManager.getRaid(messageID);
         raid.setTime(e.getMessage().getRawContent());
-        if (raid.updateTimeDB()) {
+        if (SqliteDAL.getInstance().getRaidDao().updateTimeDB(raid)) {
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Time successfully updated in database.").queue());
         } else {
         	e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Time could not be updated in database.").queue());	

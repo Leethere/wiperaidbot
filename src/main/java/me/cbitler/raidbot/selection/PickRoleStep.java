@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.selection;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidRole;
 import net.dv8tion.jda.core.entities.User;
@@ -85,18 +86,18 @@ public class PickRoleStep implements SelectionStep {
             RaidRole role = raid.getRole(roleName);
             if(role.isFlexOnly()){
                 // there are no spots for the role to be a main role, so it can only be added as flex!
-                raid.addUserFlexRole(userID, username, spec, roleName, true, true);
+                SqliteDAL.getInstance().getUsersFlexRolesDao().addUserFlexRole(raid, userID, username, spec, roleName, true, true);
                 user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Added to event roster as flex role.").queue());
             } else if (raid.isUserInRaid(userID) == false) {
                 // check if we can add it as main role
                 if(raid.isValidNotFullRole(roleName)) {
-                    raid.addUser(userID, username, spec, roleName, true, true);
+                    SqliteDAL.getInstance().getUsersDao().addUser(raid, userID, username, spec, roleName, true, true);
                     user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Added to event roster.").queue());
                 } else {
                     // the role is already full
                     // check if we can add as flex role
                     if (raid.getUserNumFlexRoles(userID) < 2) {
-                        raid.addUserFlexRole(userID, username, spec, roleName, true, true);
+                        SqliteDAL.getInstance().getUsersFlexRolesDao().addUserFlexRole(raid, userID, username, spec, roleName, true, true);
                         user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Added to event roster as flex role since the role you selected is full.").queue());
                     } else {
                         // role is full and user already has 2 flex roles
@@ -109,7 +110,7 @@ public class PickRoleStep implements SelectionStep {
                 // user has a main role already,
                 // i.e., there has to be a flex role slot available
                 // since we checked this in the ReactionHandler
-                raid.addUserFlexRole(userID, username, spec, roleName, true, true);
+                SqliteDAL.getInstance().getUsersFlexRolesDao().addUserFlexRole(raid, userID, username, spec, roleName, true, true);
                 user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Added to event roster as flex role.").queue());
             }
         } else {

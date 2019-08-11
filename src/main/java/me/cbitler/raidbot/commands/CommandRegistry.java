@@ -6,6 +6,9 @@ public class CommandRegistry {
     public static final String CMD_PREFIX = "!";
     private static final HashMap<String, Command> commands = new HashMap<>();
 
+    private CommandRegistry() {
+    }
+
     public static void addCommand(String commandText, Command cmd) {
         commands.put(commandText.toLowerCase(), cmd);
     }
@@ -15,10 +18,10 @@ public class CommandRegistry {
     }
 
     public static String[] getArguments(String[] messageParts) {
-        if(messageParts.length != 1) {
+        if (messageParts.length != 1) {
             String[] args = new String[messageParts.length - 1];
-            for(int i = 1; i < messageParts.length; i++) {
-                args[i-1] = messageParts[i];
+            for (int i = 1; i < messageParts.length; i++) {
+                args[i - 1] = messageParts[i];
             }
 
             return args;

@@ -5,6 +5,7 @@ import me.cbitler.raidbot.commands.Command;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.creation.CreationStep;
 import me.cbitler.raidbot.creation.RunNameStep;
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.edit.EditStep;
 import me.cbitler.raidbot.edit.EditIdleStep;
 import me.cbitler.raidbot.models.Raid;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 /**
  * Handle channel message-related events sent to the bot
+ *
  * @author Christopher Bitler
  * @author Franziska Mueller
  */
@@ -32,41 +34,43 @@ public class ChannelMessageHandler extends ListenerAdapter {
     public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
         RaidBot bot = RaidBot.getInstance();
         if (e.getAuthor().isBot()) {
-           return;
+            return;
         }
 
-        if(e.getMessage().getRawContent().startsWith("!")) {
+        if (e.getMessage().getRawContent().startsWith(CommandRegistry.CMD_PREFIX)) {
             String[] messageParts = e.getMessage().getRawContent().split(" ");
             String[] arguments = CommandRegistry.getArguments(messageParts);
-            Command command = CommandRegistry.getCommand(messageParts[0].replace("!",""));
-            if(command != null) {
+            Command command = CommandRegistry.getCommand(messageParts[0].replace(CommandRegistry.CMD_PREFIX, ""));
+            if (command != null) {
                 command.handleCommand(messageParts[0], arguments, e.getChannel(), e.getAuthor());
 
                 try {
                     e.getMessage().delete().queue();
-                } catch (Exception exception) {}
+                } catch (Exception exception) {
+                }
             }
         }
 
         if (PermissionsUtil.hasRaidLeaderRole(e.getMember())) {
-            if (e.getMessage().getRawContent().equalsIgnoreCase("!createEvent")) {
-            	// check if this user is already editing or creating
-            	if (bot.getCreationMap().get(e.getAuthor().getId()) != null) {
-            		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot create two events at the same time. Finish the creation process first.").queue());
-            	} else if (bot.getEditMap().get(e.getAuthor().getId()) != null) {
-            		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot create an event while editing. Finish editing the event first.").queue());
-            	} else {
-            		CreationStep runNameStep = new RunNameStep(e.getMessage().getGuild().getId());
-            		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(runNameStep.getStepText()).queue());
-            		bot.getCreationMap().put(e.getAuthor().getId(), runNameStep);
-            	}
-            	try {
+            if (e.getMessage().getRawContent().equalsIgnoreCase(CommandRegistry.CMD_PREFIX + "createEvent")) {
+                // check if this user is already editing or creating
+                if (bot.getCreationMap().get(e.getAuthor().getId()) != null) {
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot create two events at the same time. Finish the creation process first.").queue());
+                } else if (bot.getEditMap().get(e.getAuthor().getId()) != null) {
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot create an event while editing. Finish editing the event first.").queue());
+                } else {
+                    CreationStep runNameStep = new RunNameStep(e.getMessage().getGuild().getId());
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(runNameStep.getStepText()).queue());
+                    bot.getCreationMap().put(e.getAuthor().getId(), runNameStep);
+                }
+                try {
                     e.getMessage().delete().queue();
-                } catch (Exception exception) {}
-            } else if (e.getMessage().getRawContent().toLowerCase().startsWith("!removefromevent")) {
+                } catch (Exception exception) {
+                }
+            } else if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "removefromevent")) {
                 String[] split = e.getMessage().getRawContent().split(" ");
-                if(split.length < 3) {
-                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for !removeFromEvent: !removeFromEvent [event id] [name]").queue());
+                if (split.length < 3) {
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for " + CommandRegistry.CMD_PREFIX + "removeFromEvent: " + CommandRegistry.CMD_PREFIX + "removeFromEvent [event id] [name]").queue());
                 } else {
                     String messageId = split[1];
                     String name = split[2];
@@ -74,18 +78,19 @@ public class ChannelMessageHandler extends ListenerAdapter {
                     Raid raid = RaidManager.getRaid(messageId);
 
                     if (raid != null && raid.getServerId().equalsIgnoreCase(e.getGuild().getId())) {
-                        raid.removeUserByName(name);
+                        raid.removeUserByName(raid, name);
                     } else {
                         e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Non-existant event.").queue());
                     }
                 }
                 try {
                     e.getMessage().delete().queue();
-                } catch (Exception exception) {}
-            } else if (e.getMessage().getRawContent().toLowerCase().startsWith("!editevent")) {
-            	String[] split = e.getMessage().getRawContent().split(" ");
-                if(split.length < 2) {
-                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for !editEvent: !editEvent [event id]").queue());
+                } catch (Exception exception) {
+                }
+            } else if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "editevent")) {
+                String[] split = e.getMessage().getRawContent().split(" ");
+                if (split.length < 2) {
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for " + CommandRegistry.CMD_PREFIX + "editEvent: " + CommandRegistry.CMD_PREFIX + "editEvent [event id]").queue());
                 } else {
                     String messageId = split[1];
 
@@ -93,35 +98,36 @@ public class ChannelMessageHandler extends ListenerAdapter {
 
                     if (raid != null && raid.getServerId().equalsIgnoreCase(e.getGuild().getId())) {
                         // check if this user is already editing or creating, or the raid is being edited by someone else
-                    	if (bot.getCreationMap().get(e.getAuthor().getId()) != null) {
-                    		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot edit an event while creating.").queue());
-                    	} else if (bot.getEditMap().get(e.getAuthor().getId()) != null) {
-                    		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You can only edit one event at a time.").queue());
-                    	} else if (bot.getEditList().contains(messageId)) {
-                    		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The selected event is already being edited.").queue());
-                    	} else {
-                    		// start editing process
-                    		EditStep editIdleStep = new EditIdleStep(messageId);
-                    		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(editIdleStep.getStepText()).queue());
-                    		bot.getEditMap().put(e.getAuthor().getId(), editIdleStep);
-                    		bot.getEditList().add(messageId);
-                    	}
+                        if (bot.getCreationMap().get(e.getAuthor().getId()) != null) {
+                            e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot edit an event while creating.").queue());
+                        } else if (bot.getEditMap().get(e.getAuthor().getId()) != null) {
+                            e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You can only edit one event at a time.").queue());
+                        } else if (bot.getEditList().contains(messageId)) {
+                            e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The selected event is already being edited.").queue());
+                        } else {
+                            // start editing process
+                            EditStep editIdleStep = new EditIdleStep(messageId);
+                            e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(editIdleStep.getStepText()).queue());
+                            bot.getEditMap().put(e.getAuthor().getId(), editIdleStep);
+                            bot.getEditList().add(messageId);
+                        }
                     } else {
                         e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Non-existant event.").queue());
                     }
                 }
                 try {
                     e.getMessage().delete().queue();
-                } catch (Exception exception) {}
+                } catch (Exception exception) {
+                }
 
             }
         }
 
         if (e.getMember().getPermissions().contains(Permission.MANAGE_SERVER)) {
-            if(e.getMessage().getRawContent().toLowerCase().startsWith("!seteventmanagerrole")) {
+            if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "seteventmanagerrole")) {
                 String[] commandParts = e.getMessage().getRawContent().split(" ");
-                String raidLeaderRole = combineArguments(commandParts,1);
-                RaidBot.getInstance().setRaidLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
+                String raidLeaderRole = combineArguments(commandParts, 1);
+                SqliteDAL.getInstance().getServerSettingsDao().setRaidLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
                 e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Event manager role updated to: " + raidLeaderRole).queue());
                 e.getMessage().delete().queue();
             }
@@ -137,7 +143,8 @@ public class ChannelMessageHandler extends ListenerAdapter {
 
     /**
      * Combine the strings in an array of strings
-     * @param parts The array of strings
+     *
+     * @param parts  The array of strings
      * @param offset The offset in the array to start at
      * @return The combined string
      */

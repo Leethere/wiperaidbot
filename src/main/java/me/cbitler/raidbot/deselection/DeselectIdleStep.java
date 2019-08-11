@@ -1,5 +1,6 @@
 package me.cbitler.raidbot.deselection;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -37,7 +38,7 @@ public class DeselectIdleStep implements DeselectionStep {
     		if (choiceId == 0) { // main
         		// check if this user has a main role
         		if (raid.isUserInRaid(e.getAuthor().getId())) {
-        			raid.removeUserFromMainRoles(e.getAuthor().getId());
+        			SqliteDAL.getInstance().getUsersDao().removeUserFromMainRoles(raid, e.getAuthor().getId());
         			e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Removed from main role. You can choose another type or write *done*.").queue());
         			return false;
         		}
@@ -57,7 +58,7 @@ public class DeselectIdleStep implements DeselectionStep {
         		}
         	} else if (choiceId == 2) { // all
         		nextStep = null;
-        		raid.removeUser(e.getAuthor().getId());
+				SqliteDAL.getInstance().getUsersDao().removeUserFromRaid(raid, e.getAuthor().getId());
         		return true;
         	} else { // some other integer
         		e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Invalid choice. Try again or type *done* to quit deselection.").queue());

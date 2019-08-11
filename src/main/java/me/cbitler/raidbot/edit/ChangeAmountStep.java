@@ -2,6 +2,7 @@ package me.cbitler.raidbot.edit;
 
 import java.util.List;
 
+import me.cbitler.raidbot.database.sqlite.SqliteDAL;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.models.RaidRole;
@@ -54,7 +55,7 @@ public class ChangeAmountStep implements EditStep {
         {
             if (inputNumber > 0) {
                 finished = true; // we are done after we try to add
-                int out = raid.changeAmountRole(roleID, inputNumber);
+                int out = SqliteDAL.getInstance().getRaidDao().changeAmountRole(raid, roleID, inputNumber);
                 if (out == 0) { // success
                     e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Successfully changed amount.").queue());
                     raid.updateMessage();
