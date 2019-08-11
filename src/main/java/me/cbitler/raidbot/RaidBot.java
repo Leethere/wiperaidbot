@@ -1,13 +1,10 @@
 package me.cbitler.raidbot;
 
-import lombok.Getter;
 import me.cbitler.raidbot.commands.CommandRegistry;
 import me.cbitler.raidbot.commands.EndEventCommand;
 import me.cbitler.raidbot.commands.HelpCommand;
 import me.cbitler.raidbot.commands.InfoCommand;
 import me.cbitler.raidbot.creation.CreationStep;
-import me.cbitler.raidbot.database.sqlite.SqliteDAL;
-import me.cbitler.raidbot.database.sqlite.dao.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.deselection.DeselectionStep;
 import me.cbitler.raidbot.edit.EditStep;
 import me.cbitler.raidbot.handlers.ChannelMessageHandler;
@@ -16,11 +13,9 @@ import me.cbitler.raidbot.handlers.ReactionHandler;
 import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.selection.SelectionStep;
-import me.cbitler.raidbot.utility.GuildCountUtil;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,10 +41,6 @@ public class RaidBot {
 
     private Set<String> editList = new HashSet<>();
 
-    //TODO: This should be moved to it's own settings thing
-    @Getter
-    private HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
-
     /**
      * Create a new instance of the raid bot with the specified JDA api
      *
@@ -67,20 +58,21 @@ public class RaidBot {
         CommandRegistry.addCommand(InfoCommand.INFO_COMMAND, new InfoCommand());
         CommandRegistry.addCommand(EndEventCommand.END_EVENT_COMMAND, new EndEventCommand());
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    GuildCountUtil.sendGuilds(jda);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(1000 * 60 * 5);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        //Create a thread to update server count on DiscordBots.org
+//        new Thread(() -> {
+//            while (true) {
+//                try {
+//                    GuildCountUtil.sendGuilds(jda);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    Thread.sleep(1000 * 60 * 5);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
     /**

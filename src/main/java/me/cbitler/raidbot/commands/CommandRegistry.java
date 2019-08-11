@@ -4,6 +4,10 @@ import java.util.HashMap;
 
 public class CommandRegistry {
     public static final String CMD_PREFIX = "!";
+    public static final String CREATE_EVENT_COMMAND = "createEvent";
+    public static final String EDIT_EVENT_COMMAND = "editevent";
+    public static final String SET_EVENT_MANAGER_ROLE_COMMAND = "seteventmanagerrole";
+
     private static final HashMap<String, Command> commands = new HashMap<>();
 
     private CommandRegistry() {

@@ -51,8 +51,8 @@ public class ChannelMessageHandler extends ListenerAdapter {
             }
         }
 
-        if (PermissionsUtil.hasRaidLeaderRole(e.getMember())) {
-            if (e.getMessage().getRawContent().equalsIgnoreCase(CommandRegistry.CMD_PREFIX + "createEvent")) {
+        if (PermissionsUtil.hasEventLeaderRole(e.getMember())) {
+            if (e.getMessage().getRawContent().equalsIgnoreCase(CommandRegistry.CMD_PREFIX + CommandRegistry.CREATE_EVENT_COMMAND)) {
                 // check if this user is already editing or creating
                 if (bot.getCreationMap().get(e.getAuthor().getId()) != null) {
                     e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You cannot create two events at the same time. Finish the creation process first.").queue());
@@ -87,10 +87,10 @@ public class ChannelMessageHandler extends ListenerAdapter {
                     e.getMessage().delete().queue();
                 } catch (Exception exception) {
                 }
-            } else if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "editevent")) {
+            } else if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + CommandRegistry.EDIT_EVENT_COMMAND)) {
                 String[] split = e.getMessage().getRawContent().split(" ");
                 if (split.length < 2) {
-                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for " + CommandRegistry.CMD_PREFIX + "editEvent: " + CommandRegistry.CMD_PREFIX + "editEvent [event id]").queue());
+                    e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Format for " + CommandRegistry.CMD_PREFIX + CommandRegistry.EDIT_EVENT_COMMAND + ": " + CommandRegistry.CMD_PREFIX + CommandRegistry.EDIT_EVENT_COMMAND + " [event id]").queue());
                 } else {
                     String messageId = split[1];
 
@@ -121,16 +121,19 @@ public class ChannelMessageHandler extends ListenerAdapter {
                 }
 
             }
+        } else {
+            if (!e.getMember().getPermissions().contains(Permission.MANAGE_SERVER)) {
+                e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("You do not have permissions to manage events").queue());
+            }
         }
 
-        if (e.getMember().getPermissions().contains(Permission.MANAGE_SERVER)) {
-            if (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + "seteventmanagerrole")) {
-                String[] commandParts = e.getMessage().getRawContent().split(" ");
-                String raidLeaderRole = combineArguments(commandParts, 1);
-                SqliteDAL.getInstance().getServerSettingsDao().setRaidLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
-                e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Event manager role updated to: " + raidLeaderRole).queue());
-                e.getMessage().delete().queue();
-            }
+        if (e.getMember().getPermissions().contains(Permission.MANAGE_SERVER) &&
+                (e.getMessage().getRawContent().toLowerCase().startsWith(CommandRegistry.CMD_PREFIX + CommandRegistry.SET_EVENT_MANAGER_ROLE_COMMAND))) {
+            String[] commandParts = e.getMessage().getRawContent().split(" ");
+            String raidLeaderRole = combineArguments(commandParts, 1);
+            SqliteDAL.getInstance().getServerSettingsDao().setEventLeaderRole(e.getMember().getGuild().getId(), raidLeaderRole);
+            e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Event manager role updated to: " + raidLeaderRole).queue());
+            e.getMessage().delete().queue();
         }
     }
 
