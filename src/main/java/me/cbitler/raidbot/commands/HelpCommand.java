@@ -3,17 +3,20 @@ package me.cbitler.raidbot.commands;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
+import static me.cbitler.raidbot.commands.EndEventCommand.END_EVENT_COMMAND;
+import static me.cbitler.raidbot.commands.InfoCommand.INFO_COMMAND;
+
 public class HelpCommand implements Command {
     public static final String HELP_COMMAND = "help";
 
     private final String helpMessage = "Riz-GW2-Event-Bot Help:\n" +
             "Commands:\n" +
             "**" + CommandRegistry.CMD_PREFIX + "createEvent** - Start the event creation process. Usable by people with the event manager role.\n" +
-            "**" + CommandRegistry.CMD_PREFIX + "endEvent [event id] [log link 1] [log link 2] ...** - End an event, removing the message and DM'ing the users in the event with log links. The log links are optional arguments.\n" +
+            "**" + CommandRegistry.CMD_PREFIX + END_EVENT_COMMAND + " [event id] [log link 1] [log link 2] ...** - End an event, removing the message and DM'ing the users in the event with log links. The log links are optional arguments.\n" +
             "**" + CommandRegistry.CMD_PREFIX + "editEvent [event id]** - Start the event edit process. Usable by people with then event manager role.\n" +
             "**" + CommandRegistry.CMD_PREFIX + "removeFromEvent [event id] [name]** - Remove a player from an event. Only usable by people with the event manager role.\n" +
-            "**" + CommandRegistry.CMD_PREFIX + "help** - You are looking at it.\n" +
-            "**" + CommandRegistry.CMD_PREFIX + "info** - Information about the bot and it's authors.\n" +
+            "**" + CommandRegistry.CMD_PREFIX + HELP_COMMAND + "** - You are looking at it.\n" +
+            "**" + CommandRegistry.CMD_PREFIX + INFO_COMMAND + "** - Information about the bot and it's authors.\n" +
             "**" + CommandRegistry.CMD_PREFIX + "setEventManagerRole [role]** - Set the role that serves as an event manager. This is only usable by people with the manage server permission.\n" +
             "\n\n" +
             "Help information:\n" +
