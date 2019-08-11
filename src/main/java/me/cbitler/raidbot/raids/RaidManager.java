@@ -85,13 +85,10 @@ public class RaidManager {
      * queries the raid users' flex roles and inserts those to the raids
      */
     public static void loadRaids() {
-        RaidBot bot = RaidBot.getInstance();
-        SqliteDatabaseDAOImpl db = bot.getDatabase();
-
         try {
-
             QueryResult results = SqliteDAL.getInstance().getRaidDao().getAllRaids();
             while (results.getResults().next()) {
+                //TODO: USE NAMES FROM TABLE
                 String name = results.getResults().getString("name");
                 String description = results.getResults().getString("description");
                 if (description == null) {
@@ -133,6 +130,8 @@ public class RaidManager {
             QueryResult userResults = SqliteDAL.getInstance().getUsersDao().getAllUsers();
 
             while (userResults.getResults().next()) {
+                //TODO: FIX DUPLICATE STUFF
+                //TODO: USE NAMES FROM TABLES
                 String id = userResults.getResults().getString("userId");
                 String name = userResults.getResults().getString("username");
                 String spec = userResults.getResults().getString("spec");

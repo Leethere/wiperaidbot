@@ -50,8 +50,6 @@ public class RaidBot {
     @Getter
     private HashMap<String, String> raidLeaderRoleCache = new HashMap<>();
 
-    private SqliteDatabaseDAOImpl db;
-
     /**
      * Create a new instance of the raid bot with the specified JDA api
      *
@@ -63,7 +61,6 @@ public class RaidBot {
         this.jda = jda;
         jda.addEventListener(new DMHandler(this), new ChannelMessageHandler(), new ReactionHandler());
         //TODO: DELETE THIS WHEN ALL DAO'S ARE COMPLETE
-        db = SqliteDAL.getInstance().getSqliteDatabaseDAO();
         RaidManager.loadRaids();
 
         CommandRegistry.addCommand(HelpCommand.HELP_COMMAND, new HelpCommand());
@@ -158,16 +155,6 @@ public class RaidBot {
     public JDA getJda() {
         return jda;
     }
-
-    /**
-     * Get the database that the bot is using
-     *
-     * @return The database that the bot is using
-     */
-    public SqliteDatabaseDAOImpl getDatabase() {
-        return db;
-    }
-
 
     /**
      * Get the current instance of the bot

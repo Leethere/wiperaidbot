@@ -118,14 +118,10 @@ public class RaidDao extends BaseFunctionality {
      * @return True if inserted, false otherwise
      */
     public boolean insertToDatabase(PendingRaid raid, String messageId, String serverId, String channelId) {
-        RaidBot bot = RaidBot.getInstance();
-        SqliteDatabaseDAOImpl db = bot.getDatabase();
-
         String roles = formatRolesForDatabase(raid.getRolesWithNumbers());
 
         try {
-            update(
-                    "INSERT INTO `raids` (`raidId`, `serverId`, `channelId`, `isOpenWorld`, `leader`, `name`, `description`, `date`, `time`, `roles`) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            update("INSERT INTO `raids` (`raidId`, `serverId`, `channelId`, `isOpenWorld`, `leader`, `name`, `description`, `date`, `time`, `roles`) VALUES (?,?,?,?,?,?,?,?,?,?)",
                     new String[]{messageId, serverId, channelId, Boolean.toString(raid.isOpenWorld()),
                             raid.getLeaderName(), raid.getName(), raid.getDescription(), raid.getDate(), raid.getTime(),
                             roles});
