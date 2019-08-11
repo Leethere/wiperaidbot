@@ -1,6 +1,7 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
 import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidUser;
@@ -111,7 +112,7 @@ public class UsersDao extends MessageUpdateFunctionality {
 
         try {
             update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?", new String[]{id, raid.getMessageId()});
-            update("DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ?", new String[]{id, raid.getMessageId()});
+            update("DELETE FROM `" + UserFlexRoleTable.TABLE_NAME + "` WHERE `" + UserFlexRoleTable.USER_ID + "` = ? and `" + UserFlexRoleTable.RAID_ID + "` = ?", new String[]{id, raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
         }

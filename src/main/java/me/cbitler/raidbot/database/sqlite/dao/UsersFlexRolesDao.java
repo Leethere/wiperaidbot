@@ -1,6 +1,7 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
 import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidUser;
@@ -11,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable.*;
+
 
 public class UsersFlexRolesDao extends MessageUpdateFunctionality {
 
@@ -34,11 +38,11 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
     public boolean addUserFlexRole(Raid raid, String id, String name, String spec, String role, boolean db_insert,
                                    boolean update_message) {
         RaidUser user = new RaidUser(id, name, "", "");
-        FlexRole frole = new FlexRole(spec, role);
+        FlexRole flexRole = new FlexRole(spec, role);
 
         if (db_insert) {
             try {
-                update("INSERT INTO `raidUsersFlexRoles` (`userId`, `username`, `spec`, `role`, `raidId`)"
+                update("INSERT INTO `" + TABLE_NAME + "` (`" + USER_ID + "`, `" + USERNAME + "`, `" + SPEC + "`, `" + ROLE + "`, `" + RAID_ID + "`)"
                         + " VALUES (?,?,?,?,?)", new String[]{id, name, spec, role, raid.getMessageId()});
             } catch (Exception e) {
                 return false;
@@ -49,7 +53,7 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
             raid.getUsersToFlexRoles().put(user, new ArrayList<FlexRole>());
         }
 
-        raid.getUsersToFlexRoles().get(user).add(frole);
+        raid.getUsersToFlexRoles().get(user).add(flexRole);
         if (update_message) {
             updateMessage(raid);
         }
@@ -57,11 +61,11 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
     }
 
     public void deleteRaid(String messageId) throws SQLException {
-        update("DELETE FROM `raidUsersFlexRoles` WHERE `raidId` = ?", new String[]{messageId});
+        update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + RAID_ID + "` = ?", new String[]{messageId});
     }
 
     public QueryResult getAllFlexUsers() throws SQLException {
-        return query("SELECT * FROM `raidUsersFlexroles`", new String[]{});
+        return query("SELECT * FROM `" + TABLE_NAME + "`", new String[]{});
     }
 
     /**
@@ -90,7 +94,7 @@ public class UsersFlexRolesDao extends MessageUpdateFunctionality {
         }
 
         try {
-            update("DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ? and `role` = ? and `spec` = ?",
+            update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + USER_ID + "` = ? and `" + RAID_ID + "` = ? and `" + ROLE + "` = ? and `" + SPEC + "` = ?",
                     new String[]{id, raid.getMessageId(), role, spec});
         } catch (SQLException e) {
             e.printStackTrace();
