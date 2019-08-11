@@ -5,17 +5,17 @@ public class RaidTable {
     private RaidTable() {
     }
 
-    private static final String TABLE_NAME = "raids";
-    private static final String RAID_ID = "raidId";
-    private static final String SERVER_ID = "serverId";
-    private static final String CHANNEL_ID = "channelId";
-    private static final String IS_OPEN_WORLD = "isOpenWorld";
-    private static final String LEADER = "leader";
-    private static final String EVENT_NAME = "name";
-    private static final String EVENT_DESCRIPTION = "description";
-    private static final String EVENT_DATE = "date";
-    private static final String EVENT_TIME = "time";
-    private static final String ROLES = "roles";
+    public static final String TABLE_NAME = "raids";
+    public static final String RAID_ID = "raidId";
+    public static final String SERVER_ID = "serverId";
+    public static final String CHANNEL_ID = "channelId";
+    public static final String IS_OPEN_WORLD = "isOpenWorld";
+    public static final String LEADER = "leader";
+    public static final String EVENT_NAME = "name";
+    public static final String EVENT_DESCRIPTION = "description";
+    public static final String EVENT_DATE = "date";
+    public static final String EVENT_TIME = "time";
+    public static final String ROLES = "roles";
 
     private static final String TEXT_NOT_NULL = " text NOT NULL";
     private static final String NEWLINE = ", \n";

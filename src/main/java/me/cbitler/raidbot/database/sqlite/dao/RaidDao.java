@@ -1,7 +1,8 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
-import me.cbitler.raidbot.RaidBot;
 import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
+import me.cbitler.raidbot.database.sqlite.tables.UserTable;
 import me.cbitler.raidbot.models.*;
 
 import java.sql.Connection;
@@ -10,9 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static me.cbitler.raidbot.database.sqlite.tables.RaidTable.*;
 import static me.cbitler.raidbot.raids.RaidManager.formatRolesForDatabase;
 
 public class RaidDao extends BaseFunctionality {
+    public static final int ROLE_ADDED = 0;
+    public static final int ROLE_EXIST = 1;
+    public static final int ROLE_ADD_DB_ERROR = 2;
+
     public RaidDao(Connection connection) {
         this.connection = connection;
     }
@@ -26,20 +32,12 @@ public class RaidDao extends BaseFunctionality {
     public int addRole(Raid raid, RaidRole newrole) {
         for (RaidRole role : raid.getRoles()) {
             if (role.getName().equalsIgnoreCase(newrole.getName())) {
-                return 1;
+                return ROLE_EXIST;
             }
         }
         raid.getRoles().add(newrole);
 
-        String rolesString = formatRolesForDatabase(raid.getRoles());
-        try {
-            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
-                    new String[]{rolesString, raid.getMessageId()});
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 2;
-        }
+        return updateRaidRoles(raid);
     }
 
     /**
@@ -52,8 +50,9 @@ public class RaidDao extends BaseFunctionality {
     public int changeAmountRole(Raid raid, int id, int newamount) {
         String roleName = raid.getRoles().get(id).getName();
         int numberUsers = getUserNumberInRole(raid.getUserToRole(), roleName);
-        if (newamount < numberUsers)
-            return 1;
+        if (newamount < numberUsers) {
+            return ROLE_EXIST;
+        }
 
         raid.getRoles().get(id).setAmount(newamount);
 
@@ -71,8 +70,9 @@ public class RaidDao extends BaseFunctionality {
     public int changeFlexOnlyRole(Raid raid, int id, boolean newStatus) {
         String roleName = raid.getRoles().get(id).getName();
         int numberUsers = getUserNumberInRole(raid.getUserToRole(), roleName);
-        if (0 < numberUsers)
-            return 1;
+        if (0 < numberUsers) {
+            return ROLE_EXIST;
+        }
 
         raid.getRoles().get(id).setFlexOnly(newStatus);
 
@@ -81,7 +81,7 @@ public class RaidDao extends BaseFunctionality {
     }
 
     public void deleteRaid(String messageId) throws SQLException {
-        update("DELETE FROM `raids` WHERE `raidId` = ?", new String[]{messageId});
+        update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + RAID_ID + "` = ?", new String[]{messageId});
     }
 
     /**
@@ -95,8 +95,9 @@ public class RaidDao extends BaseFunctionality {
         int numberUsers = getUserNumberInRole(raid.getUserToRole(), roleName);
         int numberUsersFlex = getUserNumberInFlexRole(raid.getUsersToFlexRoles(), roleName);
 
-        if (numberUsers > 0 || numberUsersFlex > 0)
-            return 1;
+        if (numberUsers > 0 || numberUsersFlex > 0) {
+            return ROLE_EXIST;
+        }
 
         raid.getRoles().remove(id);
 
@@ -105,7 +106,7 @@ public class RaidDao extends BaseFunctionality {
     }
 
     public QueryResult getAllRaids() throws SQLException {
-        return query("SELECT * FROM `raids`", new String[]{});
+        return query("SELECT * FROM `" + TABLE_NAME + "`", new String[]{});
     }
 
     /**
@@ -121,7 +122,7 @@ public class RaidDao extends BaseFunctionality {
         String roles = formatRolesForDatabase(raid.getRolesWithNumbers());
 
         try {
-            update("INSERT INTO `raids` (`raidId`, `serverId`, `channelId`, `isOpenWorld`, `leader`, `name`, `description`, `date`, `time`, `roles`) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            update("INSERT INTO `" + TABLE_NAME + "` (`" + RAID_ID + "`, `" + SERVER_ID + "`, `" + CHANNEL_ID + "`, `" + IS_OPEN_WORLD + "`, `" + LEADER + "`, `" + EVENT_NAME + "`, `" + EVENT_DESCRIPTION + "`, `" + EVENT_DATE + "`, `" + EVENT_TIME + "`, `" + ROLES + "`) VALUES (?,?,?,?,?,?,?,?,?,?)",
                     new String[]{messageId, serverId, channelId, Boolean.toString(raid.isOpenWorld()),
                             raid.getLeaderName(), raid.getName(), raid.getDescription(), raid.getDate(), raid.getTime(),
                             roles});
@@ -143,7 +144,7 @@ public class RaidDao extends BaseFunctionality {
     public int renameRole(Raid raid, int id, String newname) {
         for (RaidRole role : raid.getRoles()) {
             if (role.getName().equalsIgnoreCase(newname)) {
-                return 1;
+                return ROLE_EXIST;
             }
         }
         String oldName = raid.getRoles().get(id).getName();
@@ -164,17 +165,17 @@ public class RaidDao extends BaseFunctionality {
         // rename in database
         String rolesString = formatRolesForDatabase(raid.getRoles());
         try {
-            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + ROLES + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{rolesString, raid.getMessageId()});
-            update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
+            update("UPDATE `" + UserTable.TABLE_NAME + "` SET `" + UserTable.ROLE + "`=? WHERE `" + UserTable.ROLE + "`=? AND `" + UserTable.RAID_ID + "`=?",
                     new String[]{newname, oldName, raid.getMessageId()});
-            update("UPDATE `raidUsersFlexRoles` SET `role`=? WHERE `role`=? AND `raidId`=?",
+            update("UPDATE `" + UserFlexRoleTable.TABLE_NAME + "` SET `" + UserFlexRoleTable.ROLE + "`=? WHERE `" + UserFlexRoleTable.ROLE + "`=? AND `" + UserFlexRoleTable.RAID_ID + "`=?",
                     new String[]{newname, oldName, raid.getMessageId()});
 
-            return 0;
+            return ROLE_ADDED;
         } catch (SQLException e) {
             e.printStackTrace();
-            return 2;
+            return ROLE_ADD_DB_ERROR;
         }
     }
 
@@ -183,7 +184,7 @@ public class RaidDao extends BaseFunctionality {
      */
     public boolean updateDateDB(Raid raid) {
         try {
-            update("UPDATE `raids` SET `date`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + EVENT_DATE + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{raid.getDate(), raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
@@ -197,7 +198,7 @@ public class RaidDao extends BaseFunctionality {
      */
     public boolean updateDescriptionDB(Raid raid) {
         try {
-            update("UPDATE `raids` SET `description`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + EVENT_DESCRIPTION + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{raid.getDescription(), raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
@@ -211,7 +212,7 @@ public class RaidDao extends BaseFunctionality {
      */
     public boolean updateLeaderDB(Raid raid) {
         try {
-            update("UPDATE `raids` SET `leader`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + LEADER + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{raid.getRaidLeaderName(), raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
@@ -225,7 +226,7 @@ public class RaidDao extends BaseFunctionality {
      */
     public boolean updateNameDB(Raid raid) {
         try {
-            update("UPDATE `raids` SET `name`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + EVENT_NAME + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{raid.getName(), raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
@@ -239,7 +240,7 @@ public class RaidDao extends BaseFunctionality {
      */
     public boolean updateTimeDB(Raid raid) {
         try {
-            update("UPDATE `raids` SET `time`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + EVENT_TIME + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{raid.getTime(), raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
@@ -268,12 +269,12 @@ public class RaidDao extends BaseFunctionality {
     private int updateRaidRoles(Raid raid) {
         String rolesString = formatRolesForDatabase(raid.getRoles());
         try {
-            update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
+            update("UPDATE `" + TABLE_NAME + "` SET `" + ROLES + "`=? WHERE `" + RAID_ID + "`=?",
                     new String[]{rolesString, raid.getMessageId()});
-            return 0;
+            return ROLE_ADDED;
         } catch (SQLException e) {
             e.printStackTrace();
-            return 2;
+            return ROLE_ADD_DB_ERROR;
         }
     }
 
@@ -287,9 +288,9 @@ public class RaidDao extends BaseFunctionality {
         int inRole = 0;
         for (Map.Entry<RaidUser, List<FlexRole>> flex : usersToFlexRoles.entrySet()) {
             if (flex.getKey() != null) {
-                for (FlexRole frole : flex.getValue()) {
-                    if (frole.getRole().equalsIgnoreCase(role))
-                        inRole += 1;
+                for (FlexRole flexRole : flex.getValue()) {
+                    if (flexRole.getRole().equalsIgnoreCase(role))
+                        inRole++;
                 }
             }
         }

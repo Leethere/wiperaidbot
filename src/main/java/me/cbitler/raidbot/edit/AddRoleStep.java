@@ -1,6 +1,7 @@
 package me.cbitler.raidbot.edit;
 
 import me.cbitler.raidbot.database.sqlite.SqliteDAL;
+import me.cbitler.raidbot.database.sqlite.dao.RaidDao;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.raids.RaidManager;
 import me.cbitler.raidbot.models.RaidRole;
@@ -30,18 +31,18 @@ public class AddRoleStep implements EditStep {
             valid = false;
         } else {
             try {
-                int amnt = Integer.parseInt(parts[0]);
+                int amount = Integer.parseInt(parts[0]);
                 String roleName = parts[1];
                 Raid raid = RaidManager.getRaid(messageID);
-                int out = SqliteDAL.getInstance().getRaidDao().addRole(raid, new RaidRole(amnt, roleName));
-                if(out == 0) {
+                int out = SqliteDAL.getInstance().getRaidDao().addRole(raid, new RaidRole(amount, roleName));
+                if(out == RaidDao.ROLE_ADDED) {
                     e.getChannel().sendMessage("Role added.").queue();
                     raid.updateMessage();
-                } else if (out == 1) {
+                } else if (out == RaidDao.ROLE_EXIST) {
                     valid = false;
                     e.getChannel().sendMessage("A role with this name already exists. Choose a different name:").queue();
                 }
-                else if (out == 2)
+                else if (out == RaidDao.ROLE_ADD_DB_ERROR)
                     e.getChannel().sendMessage("New role could not be added to database.").queue();
             } catch (Exception ex) {
                 e.getChannel().sendMessage("Invalid input: Make sure it's in the format of `[amount]:[role name]`, like `1:DPS`.\nMake the role `flex only` by prepending its name with an exclamation mark (`!`) or by setting the amount to `0`.").queue();
@@ -49,7 +50,7 @@ public class AddRoleStep implements EditStep {
             }
         }
 
-        if (valid == false) {
+        if (!valid) {
             e.getAuthor().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Invalid input. Try again.").queue());
         }
 

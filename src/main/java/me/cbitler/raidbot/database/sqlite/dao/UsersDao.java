@@ -1,6 +1,7 @@
 package me.cbitler.raidbot.database.sqlite.dao;
 
 import me.cbitler.raidbot.database.QueryResult;
+import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
 import me.cbitler.raidbot.models.FlexRole;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidUser;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static me.cbitler.raidbot.database.sqlite.tables.UserTable.*;
 
 public class UsersDao extends MessageUpdateFunctionality {
 
@@ -36,7 +39,7 @@ public class UsersDao extends MessageUpdateFunctionality {
 
         if (db_insert) {
             try {
-                update("INSERT INTO `raidUsers` (`userId`, `username`, `spec`, `role`, `raidId`)"
+                update("INSERT INTO `" + TABLE_NAME + "` (`" + USER_ID + "`, `" + USERNAME + "`, `" + SPEC + "`, `" + ROLE + "`, `" + RAID_ID + "`)"
                         + " VALUES (?,?,?,?,?)", new String[]{id, name, spec, role, raid.getMessageId()});
             } catch (SQLException e) {
                 return false;
@@ -53,11 +56,11 @@ public class UsersDao extends MessageUpdateFunctionality {
     }
 
     public void deleteRaid(String messageId) throws SQLException {
-        update("DELETE FROM `raidUsers` WHERE `raidId` = ?", new String[]{messageId});
+        update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + RAID_ID + "` = ?", new String[]{messageId});
     }
 
     public QueryResult getAllUsers() throws SQLException {
-        return query("SELECT * FROM `raidUsers`", new String[]{});
+        return query("SELECT * FROM `" + TABLE_NAME + "`", new String[]{});
     }
 
     /**
@@ -75,7 +78,7 @@ public class UsersDao extends MessageUpdateFunctionality {
         }
 
         try {
-            update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?", new String[]{id, raid.getMessageId()});
+            update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + USER_ID + "` = ? AND `" + RAID_ID + "` = ?", new String[]{id, raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -110,8 +113,8 @@ public class UsersDao extends MessageUpdateFunctionality {
         }
 
         try {
-            update("DELETE FROM `raidUsers` WHERE `userId` = ? AND `raidId` = ?", new String[]{id, raid.getMessageId()});
-            update("DELETE FROM `raidUsersFlexRoles` WHERE `userId` = ? and `raidId` = ?", new String[]{id, raid.getMessageId()});
+            update("DELETE FROM `" + TABLE_NAME + "` WHERE `" + USER_ID + "` = ? AND `" + RAID_ID + "` = ?", new String[]{id, raid.getMessageId()});
+            update("DELETE FROM `" + UserFlexRoleTable.TABLE_NAME + "` WHERE `" + UserFlexRoleTable.USER_ID + "` = ? and `" + UserFlexRoleTable.RAID_ID + "` = ?", new String[]{id, raid.getMessageId()});
         } catch (SQLException e) {
             e.printStackTrace();
         }
