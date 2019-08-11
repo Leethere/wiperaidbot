@@ -3,6 +3,7 @@ package me.cbitler.raidbot.database.sqlite.dao;
 import me.cbitler.raidbot.RaidBot;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.database.sqlite.tables.UserFlexRoleTable;
+import me.cbitler.raidbot.database.sqlite.tables.UserTable;
 import me.cbitler.raidbot.models.*;
 
 import java.sql.Connection;
@@ -167,7 +168,7 @@ public class RaidDao extends BaseFunctionality {
         try {
             update("UPDATE `raids` SET `roles`=? WHERE `raidId`=?",
                     new String[]{rolesString, raid.getMessageId()});
-            update("UPDATE `raidUsers` SET `role`=? WHERE `role`=? AND `raidId`=?",
+            update("UPDATE `" + UserTable.TABLE_NAME + "` SET `" + UserTable.ROLE + "`=? WHERE `" + UserTable.ROLE + "`=? AND `" + UserTable.RAID_ID + "`=?",
                     new String[]{newname, oldName, raid.getMessageId()});
             update("UPDATE `" + UserFlexRoleTable.TABLE_NAME + "` SET `" + UserFlexRoleTable.ROLE + "`=? WHERE `" + UserFlexRoleTable.ROLE + "`=? AND `" + UserFlexRoleTable.RAID_ID + "`=?",
                     new String[]{newname, oldName, raid.getMessageId()});
