@@ -3,7 +3,6 @@ package me.cbitler.raidbot.raids;
 import me.cbitler.raidbot.RaidBot;
 import me.cbitler.raidbot.database.QueryResult;
 import me.cbitler.raidbot.database.sqlite.SqliteDAL;
-import me.cbitler.raidbot.database.sqlite.dao.SqliteDatabaseDAOImpl;
 import me.cbitler.raidbot.models.PendingRaid;
 import me.cbitler.raidbot.models.Raid;
 import me.cbitler.raidbot.models.RaidRole;
